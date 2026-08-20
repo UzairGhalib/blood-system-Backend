@@ -4,7 +4,7 @@ const connectDB = async () => {
   const mongoURI = process.env.MONGO_URI;
 
   if (!mongoURI) {
-    console.warn("MONGO_URI is not set. Server will continue without a database connection.");
+    console.warn("MONGO_URI is not set.");
     return false;
   }
 
@@ -23,7 +23,7 @@ const connectDB = async () => {
     console.error("=================================");
     console.error("MongoDB connection failed");
     console.error(error.message);
-    console.error("Your Atlas IP may not be whitelisted. Add your current IP in MongoDB Atlas or use a local MongoDB instance.");
+    console.error("Check the MongoDB Atlas connection string and Network Access settings.");
     console.error("=================================");
     return false;
   }

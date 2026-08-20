@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const mongoose = require("mongoose");
 
 const { errorHandler, notFound } = require("./middleware/errorMiddleware");
 
@@ -11,7 +12,8 @@ const profileRoutes = require("./routes/profileRoutes");
 const requesterRoutes = require("./routes/requesterRoutes");
 
 const app = express();
-const serverPort = process.env.PORT || 5000;
+app.disable("x-powered-by");
+app.set("trust proxy", 1);
 
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
@@ -53,9 +55,14 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: `BloodLink backend is running on port ${serverPort}`,
+  const databaseConnected = mongoose.connection.readyState === 1;
+
+  res.status(databaseConnected ? 200 : 503).json({
+    success: databaseConnected,
+    message: databaseConnected
+      ? "BloodLink backend and database are ready"
+      : "BloodLink backend is running, but MongoDB is not connected",
+    database: databaseConnected ? "connected" : "disconnected",
   });
 });
 

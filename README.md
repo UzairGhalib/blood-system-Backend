@@ -52,7 +52,9 @@ npm run verify:db-structure
 
 ## Render deployment
 
-Set these environment variables on the backend web service:
+The included `render.yaml` configures the Node service, start command, and a
+database-aware health check. In Render, choose **New > Blueprint**, connect this
+repository, and supply these environment variables when prompted:
 
 ```text
 MONGO_URI=<your MongoDB Atlas connection string>
@@ -66,8 +68,20 @@ include a trailing slash. Multiple frontend origins can be comma-separated.
 In MongoDB Atlas, allow Render's outbound connection (commonly `0.0.0.0/0` in
 Network Access) and keep the database username/password restricted and secret.
 
-For the Vite frontend, set:
+Do not manually set `PORT`; Render supplies it. `CLIENT_ORIGIN` must match the
+deployed Vercel origin exactly and must not include a trailing slash. Multiple
+origins can be comma-separated, for example the production domain and a specific
+preview domain.
+
+After Render deploys, verify:
 
 ```text
-VITE_API_URL=https://bloodlink-gd4c.onrender.com
+https://<your-render-service>.onrender.com/api/health
+```
+
+It returns HTTP 200 only when both Express and MongoDB are ready. Then set this on
+Vercel and redeploy the frontend:
+
+```text
+VITE_API_URL=https://<your-render-service>.onrender.com
 ```

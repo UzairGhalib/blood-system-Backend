@@ -7,33 +7,40 @@ const connectDB = require("./config/db");
 const defaultPort = Number(process.env.PORT) || 5000;
 
 const startServer = async () => {
-  const dbConnected = await connectDB();
-
-  if (!dbConnected) {
-    console.log("Starting server without database connection. Some features may not work until MongoDB is reachable.");
+  if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
+    throw new Error("JWT_SECRET is required in production.");
   }
 
-  const startOnPort = (port) => {
-    const server = http.createServer(app);
+  const dbConnected = await connectDB();
 
-    server.on("error", (error) => {
-      if (error.code === "EADDRINUSE") {
-        const nextPort = port + 1;
-        console.warn(`Port ${port} is busy. Retrying on port ${nextPort}...`);
-        startOnPort(nextPort);
-        return;
-      }
+  if (!dbConnected && process.env.NODE_ENV === "production") {
+    throw new Error("MongoDB must be connected before the production server starts.");
+  }
 
-      console.error("Server error:", error);
-      process.exit(1);
-    });
+  if (!dbConnected) {
+    console.warn("Starting the local server without MongoDB. Database features are unavailable.");
+  }
 
-    server.listen(port, () => {
-      console.log(`BloodLink backend running on port ${port}`);
-    });
+  const server = http.createServer(app);
+
+  server.on("error", (error) => {
+    console.error("Server error:", error);
+    process.exit(1);
+  });
+
+  server.listen(defaultPort, "0.0.0.0", () => {
+    console.log(`BloodLink backend running on port ${defaultPort}`);
+  });
+
+  const shutDown = () => {
+    server.close(() => process.exit(0));
   };
 
-  startOnPort(defaultPort);
+  process.on("SIGTERM", shutDown);
+  process.on("SIGINT", shutDown);
 };
 
-startServer();
+startServer().catch((error) => {
+  console.error("Unable to start BloodLink backend:", error.message);
+  process.exit(1);
+});
