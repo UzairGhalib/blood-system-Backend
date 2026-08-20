@@ -1,0 +1,18 @@
+const sendSuccess = (res, data = null, message = "Success", statusCode = 200) =>
+  res.status(statusCode).json({
+    success: true,
+    message,
+    data,
+  });
+
+const sendError = (res, message = "Something went wrong", statusCode = 400, errors = null) =>
+  res.status(statusCode).json({
+    success: false,
+    message,
+    errors,
+  });
+
+module.exports = {
+  sendError,
+  sendSuccess,
+};
