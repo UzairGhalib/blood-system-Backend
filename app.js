@@ -13,14 +13,23 @@ const requesterRoutes = require("./routes/requesterRoutes");
 const app = express();
 const serverPort = process.env.PORT || 5000;
 
-const allowedOrigins = (process.env.CLIENT_ORIGIN || "http://localhost:5173")
+const allowedOrigins = [
+  process.env.CLIENT_ORIGIN,
+  process.env.FRONTEND_URL,
+  process.env.NODE_ENV === "production" ? "" : "http://localhost:5173,http://localhost:5174",
+]
+  .filter(Boolean)
+  .join(",")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
 
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("This frontend origin is not allowed by CORS."));
+    },
     credentials: true,
   })
 );

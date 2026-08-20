@@ -37,10 +37,13 @@ const createToken = (account) =>
   );
 
 const setAuthCookie = (res, token) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   res.cookie("bloodlinkToken", token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+    path: "/",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 };
@@ -285,7 +288,13 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-  res.clearCookie("bloodlinkToken");
+  const isProduction = process.env.NODE_ENV === "production";
+  res.clearCookie("bloodlinkToken", {
+    httpOnly: true,
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
+    path: "/",
+  });
   return sendSuccess(res, null, "Logged out successfully");
 });
 

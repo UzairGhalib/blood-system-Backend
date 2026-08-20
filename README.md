@@ -49,3 +49,25 @@ a password hash without printing any credential values:
 ```powershell
 npm run verify:db-structure
 ```
+
+## Render deployment
+
+Set these environment variables on the backend web service:
+
+```text
+MONGO_URI=<your MongoDB Atlas connection string>
+JWT_SECRET=<a long random secret>
+NODE_ENV=production
+CLIENT_ORIGIN=https://<your-frontend-domain>
+```
+
+`CLIENT_ORIGIN` must match the deployed frontend origin exactly and must not
+include a trailing slash. Multiple frontend origins can be comma-separated.
+In MongoDB Atlas, allow Render's outbound connection (commonly `0.0.0.0/0` in
+Network Access) and keep the database username/password restricted and secret.
+
+For the Vite frontend, set:
+
+```text
+VITE_API_URL=https://bloodlink-gd4c.onrender.com
+```
